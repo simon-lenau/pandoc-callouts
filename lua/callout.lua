@@ -71,20 +71,22 @@ end
 function yaml_to_table(list)
     local output = {}
     for k, v in pairs(list) do
-        -- print("k is " .. pandoc.utils.stringify(k) .. "(" .. pandoc.utils.type(k) .. "  | " .. type(t) .. ")")
+        -- print("k is " .. pandoc.utils.stringify(k) .. "(" .. pandoc.utils.type(k) .. "  | " .. type(k) .. ")")
         -- print("v is " .. pandoc.utils.stringify(v) .. "(" .. pandoc.utils.type(v) .. " | " .. type(v) .. ")")
         if (pandoc.utils.type(k) == "string") then
             if (pandoc.utils.type(v) == "table") then
                 output[k] = yaml_to_table(v)
+                class_name = k:match("^%s*(.-)%s*$"):lower()
+                if (not class_name:match("_style$")) then
+                    output[k]['class_name'] = class_name
+                end
             elseif (pandoc.utils.type(v) == "boolean") then
                 output[k] = v
             elseif (pandoc.utils.type(v) == "string" and v:match("^%s*$")) then
                 output['class_name'] = k:match("^%s*(.-)%s*$"):lower()
             else
-                output[k] = pandoc.utils.stringify(v):lower()
+                output[k] = pandoc.utils.stringify(v)
             end
-            -- print("output[" .. k .. "] = ", output[k])
-
         elseif (pandoc.utils.type(k) == "number" and pandoc.utils.type(v) == "table") then
             output[k] = yaml_to_table(v)
         elseif (pandoc.utils.type(k) == "number" and pandoc.utils.type(v) == "Inlines") then
@@ -111,12 +113,14 @@ function table_to_CSS(tbl, concat)
     -- Construct key: value pairs
     local parts = {}
     for k, v in pairs(tbl) do
-        if (pandoc.utils.type(v) == "table") then
-            for ik, iv in pairs(v) do
-                table.insert(parts, ik .. ": " .. pandoc.utils.stringify(iv))
+        if (not k ~= "class_name") then
+            if (pandoc.utils.type(v) == "table") then
+                for ik, iv in pairs(v) do
+                    table.insert(parts, ik .. ": " .. pandoc.utils.stringify(iv))
+                end
+            else
+                table.insert(parts, k .. ": " .. tostring(v))
             end
-        else
-            table.insert(parts, k .. ": " .. tostring(v))
         end
     end
     -- Concatenate the key: value pairs with the separator
@@ -151,7 +155,7 @@ function add_callout_style(options)
         table_to_CSS(header_style, "; ") .. "\n}")
 
     -- Needed for content
-    table.insert(callout_styles, ".callout-" .. class_name .. " > .callout-body-container" .. " {\n" ..
+    table.insert(callout_styles, ".callout-" .. class_name .. " .callout-body-container" .. " {\n" ..
         table_to_CSS(body_style, "; ") .. "\n}")
 
 end
@@ -345,6 +349,8 @@ function process_yaml(meta)
     local callout_types_tbl = yaml_to_table(callout_types)
 
     for class, _ in pairs(callout_types_tbl) do
+        print("class: ", class)
+        print("class_name:" .. tostring(callout_types_tbl[class]["class_name"]) .. "X")
         define_callout_type(callout_types_tbl[class])
     end
 end
