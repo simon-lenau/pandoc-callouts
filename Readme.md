@@ -63,7 +63,7 @@ You can use virtual environments.
 
 ## Example
 
-See [main.qmd](examples/main.qmd) for a full example:
+See [examples/main.qmd](examples/main.qmd) for a full example:
 
 ```yaml
 title: "Advanced quarto callouts"
