@@ -349,8 +349,8 @@ function process_yaml(meta)
     local callout_types_tbl = yaml_to_table(callout_types)
 
     for class, _ in pairs(callout_types_tbl) do
-        print("class: ", class)
-        print("class_name:" .. tostring(callout_types_tbl[class]["class_name"]) .. "X")
+        -- print("class: ", class)
+        -- print("class_name:" .. tostring(callout_types_tbl[class]["class_name"]) .. "X")
         define_callout_type(callout_types_tbl[class])
     end
 end
