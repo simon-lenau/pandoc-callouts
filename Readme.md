@@ -106,7 +106,7 @@ The filter workflow:
    - Fills missing style parameters with defaults (`complete`).
    - Appends `!important` to CSS properties.
    - Generates CSS rules, inserted into the document header (`add_css_to_meta`).
-   - Registers a handler for `Div` elements matching the class, leveraging Quarto's Callout API to produce HTML with titles and collapse behavior.
+   - Registers a handler for `Div` elements matching the class, leveraging [Quarto's Callout API](https://quarto.org/docs/prerelease/1.3/custom-ast-nodes/callout.html) to produce HTML with titles and collapse behavior.
 4. **Document transformation**:
    - First pass: Counts headers and injects callout Divs (`callout_handler`).
    - Second pass: Resolves citation links to callout references (`resolve_references`).
