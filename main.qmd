@@ -1,0 +1,40 @@
+---
+title: "Advanced quarto callouts"
+number-sections: true
+filters: 
+  - lua/callout.lua
+date: now
+date-format: "HH:MM:ss"
+callout-types:
+  - task:
+    label: "Task"
+    collapse: false
+    header_style:
+      background-color: red
+  - hint:
+    label: "Hint"
+    collapse: true
+    header_style:
+      background-color: orange
+    style:
+      background-color: white
+  - sol:
+    label: "Solution"
+---
+
+# Header
+
+## Subheader
+
+
+::: { .task title = "Title" }
+
+::: { .hint title = "ABC" }
+::: { .hint title = "DEF" }
+  Some more text
+:::
+:::
+::: { .sol title = "This is a solution" }
+  Some more more text
+:::
+:::
