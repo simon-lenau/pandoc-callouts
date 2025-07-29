@@ -79,9 +79,9 @@ function yaml_to_table(list)
             elseif (pandoc.utils.type(v) == "boolean") then
                 output[k] = v
             elseif (pandoc.utils.type(v) == "string" and v:match("^%s*$")) then
-                output['class_name'] = k:match("^%s*(.-)%s*$")
+                output['class_name'] = k:match("^%s*(.-)%s*$"):lower()
             else
-                output[k] = pandoc.utils.stringify(v)
+                output[k] = pandoc.utils.stringify(v):lower()
             end
             -- print("output[" .. k .. "] = ", output[k])
 
@@ -89,7 +89,7 @@ function yaml_to_table(list)
             output[k] = yaml_to_table(v)
         elseif (pandoc.utils.type(k) == "number" and pandoc.utils.type(v) == "Inlines") then
             output[k] = {
-                class_name = pandoc.utils.stringify(v)
+                class_name = pandoc.utils.stringify(v):lower()
             }
         end
     end

@@ -1,3 +1,9 @@
+---
+noteId: "f91775506c6b11f0a36afb9137ec4b0c"
+tags: []
+
+---
+
 # Quarto Lua Callout Filter
 
 A [Quarto](https://quarto.org) / [Pandoc](https://pandoc.org) Lua filter to define and style arbitrary callouts via a `callout-types` block in your YAML header. Supports numbering based on header levels, collapse behavior, and reference resolution.
