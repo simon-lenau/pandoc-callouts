@@ -20,6 +20,7 @@ local body_style_default = {
 -- ========================= > Table definitions < ========================== --
 
 local header_counts = {}
+local callout_count_reset_levels = {}
 local callout_counts = {}
 local callout_handlers = {}
 local callout_styles = {}
@@ -174,6 +175,13 @@ function count_headers(header)
         header_counts[i] = 0
     end
 
+    for c, l in pairs(callout_count_reset_levels) do
+        if l >= level then
+            print("Resetting callout_counts[" .. tostring(c) .. "]")
+            callout_counts[c] = 0
+        end
+    end
+
     -- Increment current level
     header_counts[level] = (header_counts[level] or 0) + 1
     return header
@@ -243,6 +251,9 @@ function define_callout_type(options)
         header_style = header_style
     })
 
+    -- Define reset level for callout counter
+    callout_count_reset_levels[class_name] = header_level
+
     -- Make (only) first letter of label uppercase
     label = label:gsub("^%l", label.upper)
 
@@ -253,10 +264,10 @@ function define_callout_type(options)
             -- Build callout number like "1.2.3" using header levels up to `header_level`
             local numberings = {}
             for i = 1, header_level do
-                if header_counts[i] then
+                if (header_counts[i] and header_counts[i] > 0) then
                     table.insert(numberings, tostring(header_counts[i]))
                 else
-                    table.insert(numberings, tostring(0))
+                    table.insert(numberings, tostring("_"))
                 end
             end
             table.insert(numberings, tostring(callout_counts[class_name]))
@@ -349,8 +360,6 @@ function process_yaml(meta)
     local callout_types_tbl = yaml_to_table(callout_types)
 
     for class, _ in pairs(callout_types_tbl) do
-        -- print("class: ", class)
-        -- print("class_name:" .. tostring(callout_types_tbl[class]["class_name"]) .. "X")
         define_callout_type(callout_types_tbl[class])
     end
 end
