@@ -72,9 +72,7 @@ end
 function yaml_to_table(list)
     local output = {}
     for k, v in pairs(list) do
-        -- print("k is " .. pandoc.utils.stringify(k) .. "(" .. pandoc.utils.type(k) .. "  | " .. type(k) .. ")")
-        -- print("v is " .. pandoc.utils.stringify(v) .. "(" .. pandoc.utils.type(v) .. " | " .. type(v) .. ")")
-        if (pandoc.utils.type(k) == "string") then
+if (pandoc.utils.type(k) == "string") then
             if (pandoc.utils.type(v) == "table") then
                 output[k] = yaml_to_table(v)
                 class_name = k:match("^%s*(.-)%s*$"):lower()
@@ -177,7 +175,6 @@ function count_headers(header)
 
     for c, l in pairs(callout_count_reset_levels) do
         if l >= level then
-            print("Resetting callout_counts[" .. tostring(c) .. "]")
             callout_counts[c] = 0
         end
     end
@@ -280,7 +277,6 @@ function define_callout_type(options)
                 ["ref"] = callout_title,
                 ["title"] = div.attributes["title"]
             }
-
             -- If there is a title attribute, append it to the callout title
             if (div.attributes["title"] or "") ~= "" then
                 callout_title = callout_title .. ": " .. div.attributes["title"]
@@ -390,6 +386,7 @@ function Pandoc(doc)
 
     -- Create callout type definitions
     process_yaml(doc.meta)
+
     -- Add CSS to meta data
     add_css_to_meta(doc.meta)
 
@@ -406,6 +403,8 @@ function Pandoc(doc)
 
     return doc
 end
+
+
 
 return {{
     Pandoc = Pandoc

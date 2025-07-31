@@ -2,3 +2,4 @@
 !Readme.md
 !./examples/main.qmd
 !./lua/callout.lua
+/.luarc.json

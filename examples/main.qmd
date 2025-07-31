@@ -35,6 +35,6 @@ callout-types:
 :::
 :::
 ::: { .sol title = "This is a solution" }
-  Some more more text
+  Some more more text x
 :::
 :::
