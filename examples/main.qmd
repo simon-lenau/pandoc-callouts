@@ -2,7 +2,7 @@
 title: "Advanced quarto callouts"
 number-sections: true
 filters: 
-  - lua/callout.lua
+  - ../lua/callout.lua
 date: now
 date-format: "HH:MM:ss"
 callout-types:
