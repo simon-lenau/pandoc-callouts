@@ -1,3 +1,5 @@
+local overall_callout_count = 0
+
 -- ========================= > Style definitions < ========================== --
 local style_default = {
     ["border"] = "1px solid"
@@ -18,10 +20,12 @@ local body_style_default = {
 -- ───────────────────────────────── <end> ────────────────────────────────── --
 
 -- ========================= > Table definitions < ========================== --
+local identation_level = 0
 
 local header_counts = {}
 local callout_count_reset_levels = {}
 local callout_counts = {}
+local callout_numberings = {}
 local callout_handlers = {}
 local callout_styles = {}
 
@@ -72,7 +76,7 @@ end
 function yaml_to_table(list)
     local output = {}
     for k, v in pairs(list) do
-if (pandoc.utils.type(k) == "string") then
+        if (pandoc.utils.type(k) == "string") then
             if (pandoc.utils.type(v) == "table") then
                 output[k] = yaml_to_table(v)
                 class_name = k:match("^%s*(.-)%s*$"):lower()
@@ -181,23 +185,187 @@ function count_headers(header)
 
     -- Increment current level
     header_counts[level] = (header_counts[level] or 0) + 1
+
+    -- print("Counted header " .. tostring(header))
     return header
 end
 
 -- ───────────────────────────────── <end> ────────────────────────────────── --
--- ============================ > ensure_type < ============================= --
+
+-- ================================ > warn < ================================ --
 
 -- ┌┌──────────────────────────────────────────────────────────────────────┐┐ --
--- ││ Ensure that an argument is of appropriate type,                      ││ --
--- ││ throw error otherwise                                                ││ --
+-- ││ warn                                                                 ││ --
 -- └└──────────────────────────────────────────────────────────────────────┘┘ --
-function ensure_type(arguments, arg_name, expected_type)
-    if type(arguments[arg_name]) ~= expected_type then
-        error(string.format("Argument '%s' must be of type '%s' but is '%s'", arg_name, expected_type,
-            type(arguments[arg_name])))
-    end
+function warn(message)
+    io.stderr:write(string.rep("-", 80, ""), "\n", "WARNING: " .. message, "\n", string.rep("-", 80, ""), "\n")
 end
+
 -- ───────────────────────────────── <end> ────────────────────────────────── --
+
+-- ========================== > assert_argument < =========================== --
+
+-- ┌┌──────────────────────────────────────────────────────────────────────┐┐ --
+-- ││ x                                                                    ││ --
+-- └└──────────────────────────────────────────────────────────────────────┘┘ --
+
+-- ───────────────────────────────── <end> ────────────────────────────────── --
+
+function assert_argument(options)
+    -- Ensure options is a table
+    assert(type(options) == "table", "Expected a table for 'options' but got " .. type(options))
+
+    -- Retrieve values from the options table
+    local arguments = options.arguments
+    local name = options.name
+    local type_name = options.type
+
+    -- Make sure argument is of appropriate type
+    assert(type(arguments) == "table",
+        "Expected a string for 'arguments' but got " .. type(arguments) .. "('" .. tostring(arguments) .. "')")
+    assert(type(name) == "string",
+        "Expected a string for 'name' but got " .. type(name) .. "('" .. tostring(name) .. "')")
+    assert(type(type_name) == "string",
+        "Expected a string for 'type' but got " .. type(type_name) .. "('" .. tostring(type_name) .. "')")
+
+    assert(type(arguments[name]) == type_name,
+        "Expected type '" .. type_name .. "' for argument '" .. name .. "' but got " .. type(arguments[name]) .. "('" ..
+            tostring(arguments[name]) .. "')")
+
+end
+
+-- ========================= > callout_ref_number < ========================= --
+
+-- ┌┌──────────────────────────────────────────────────────────────────────┐┐ --
+-- ││ x                                                                    ││ --
+-- ││ y                                                                    ││ --
+-- └└──────────────────────────────────────────────────────────────────────┘┘ --
+
+function callout_no_placeholder(id)
+    return "<<the@value@" .. id .. ">>"
+end
+
+function use_callout_reference(options)
+    -- Ensure options is a table
+    assert(type(options) == "table", "Expected a table for 'options' but got " .. type(options))
+
+    -- Make sure arguments are of appropriate type
+    assert_argument({
+        arguments = options,
+        name = "callout_id",
+        type = "string"
+    })
+    assert_argument({
+        arguments = options,
+        name = "field",
+        type = "string"
+    })
+
+    return "[[callout_meta_infos[" .. options.callout_id .. "][" .. options.field .. "]]]"
+end
+
+function resolve_callout_reference(div)
+    div.content = pandoc.walk_block(pandoc.Div(div.content), {
+        Inline = function(iline)
+            if iline and iline.t == "Str" then
+                new_text = iline.text:gsub("%[%[callout_meta_infos%[(.-)%]%[(.-)%]%]%]", function(id, field)
+                    return callout_references[id][field]
+                end)
+                iline.text = new_text
+            end
+            return iline
+        end
+    }).content
+    return div
+
+end
+
+-- ───────────────────────────────── <end> ────────────────────────────────── --
+
+-- ========================== > define_reference < ========================== --
+-- ┌┌──────────────────────────────────────────────────────────────────────┐┐ --
+-- ││ Define references                                                    ││ --
+-- └└──────────────────────────────────────────────────────────────────────┘┘ --
+function define_callout_reference(options)
+    -- Ensure options is a table
+    assert(type(options) == "table", "Expected a table for 'options' but got " .. type(options))
+
+    -- Retrieve values from the options table
+    local callout_id = options.callout_id
+    local callout_no = options.callout_no
+    local callout_ref = options.callout_ref
+    local callout_title = options.callout_title
+    local callout_type = options.callout_type
+    local callout_type_label = options.callout_type_label
+
+    -- Check if the callout_id already exists
+    if callout_references[callout_id] then
+        warn("Callout with ID '" .. callout_id .. "' already exists.")
+        return
+    end
+
+    -- Check if the callout type is defined
+    if not callout_handlers[callout_type] then
+        warn("callout_handlers['" .. callout_type .. "'] is not defined.")
+        return
+    end
+
+    -- Make sure arguments are of appropriate type
+    assert(type(callout_id) == "string",
+        "Expected a string for 'callout_id' but got " .. type(callout_id) .. "('" .. tostring(callout_id) .. "')")
+    assert(type(callout_no) == "string",
+        "Expected a string for 'callout_no' but got " .. type(callout_no) .. "('" .. tostring(callout_no) .. "')")
+    assert(type(callout_ref) == "string",
+        "Expected a string for 'callout_ref' but got " .. type(callout_ref) .. "('" .. tostring(callout_ref) .. "')")
+    assert(type(callout_title) == "string", "Expected a string for 'callout_title' but got " .. type(callout_title) ..
+        "('" .. tostring(callout_title) .. "')")
+    assert(type(callout_type_label) == "string",
+        "Expected a string for 'callout_type_label' but got " .. type(callout_type_label) .. "('" ..
+            tostring(callout_type_label) .. "')")
+
+    callout_references[callout_id] = {
+        ["type"] = callout_type,
+        ["label"] = callout_type_label,
+        ["id"] = callout_id,
+        ["no"] = callout_no,
+        ["ref"] = callout_ref,
+        ["title"] = callout_title,
+        ["level"] = 0
+    }
+end
+
+-- ───────────────────────────────── <end> ────────────────────────────────── --
+
+-- -- ========================== > use_callout_reference < ========================== --
+-- -- ┌┌──────────────────────────────────────────────────────────────────────┐┐ --
+-- -- ││ Use references                                                    ││ -- 
+-- -- └└──────────────────────────────────────────────────────────────────────┘┘ --
+-- local callout_reference_placeholders = {"id", "no", "ref", "title", "type", "label"}
+-- function use_callout_reference(options)
+--     -- Ensure options is a table
+--     assert(type(options) == "table", "Expected a table for 'options' but got " .. type(options))
+
+--     -- Retrieve values from the options table
+--     local callout_id = options.callout_id
+--     local format = options.format
+
+--     -- Make sure arguments are of appropriate type
+--     assert(type(callout_id) == "string",
+--         "Expected a string for 'callout_id' but got " .. type(callout_id) .. "('" .. tostring(callout_id) .. "')")
+--     assert(type(format) == "string",
+--         "Expected a string for 'format' but got " .. type(format) .. "('" .. tostring(format) .. "')")
+
+--     -- callout_references[callout_id][placeholder]
+--     for _, placeholder in ipairs(callout_reference_placeholders) do
+--         format = format:gsub("%%" .. placeholder, use_callout_reference({
+--             callout_id = callout_id,
+--             field = placeholder
+--         }))
+--     end
+--     return format
+-- end
+
+-- -- ───────────────────────────────── <end> ────────────────────────────────── --
 
 -- ======================== > define_callout_type < ========================= --
 
@@ -212,9 +380,11 @@ function define_callout_type(options)
 
     local class_name = options.class_name or options.label or "default-callout"
     local collapse = (options.collapse == nil) and true or options.collapse
+    local counter = (options.counter == nil) and class_name or options.counter
     local header_level = tonumber(options.header_level or 2)
     local header_style = options.header_style or options.style or header_style_default
     local icon = (options.collapse == nil) and false or options.icon
+    local inherit_counter = (options.inherit_counter ~= nil) and options.inherit_counter or false
     local label = options.label or class_name
     local style = options.style or style_default
 
@@ -223,10 +393,15 @@ function define_callout_type(options)
         "Expected a string for 'label' but got " .. type(label) .. "('" .. tostring(label) .. "')")
     assert(type(class_name) == "string",
         "Expected a string for 'class_name' but got " .. type(class_name) .. "('" .. tostring(class_name) .. "')")
+    assert(type(counter) == "string",
+        "Expected a string for 'counter' but got " .. type(counter) .. "('" .. tostring(counter) .. "')")
     assert(type(header_level) == "number",
         "Expected a number for 'header_level' but got " .. type(header_level) .. "('" .. tostring(header_level) .. "')")
     assert(type(collapse) == "boolean",
         "Expected a boolean for 'collapse' but got " .. type(collapse) .. "('" .. tostring(collapse) .. "')")
+    assert(type(inherit_counter) == "boolean",
+        "Expected a boolean for 'inherit_counter' but got " .. type(inherit_counter) .. "('" ..
+            tostring(inherit_counter) .. "')")
 
     -- Complete style declarations using default values
     complete(style, style_default)
@@ -236,7 +411,8 @@ function define_callout_type(options)
     complete(header_style, style_default)
     complete(body_style, style_default)
 
-    -- Add to each style entry if not already there
+    -- Add "!important" to each style entry if not already there
+    --      (otherwise, quarto defaults will sometimes interfer)
     important(header_style)
     important(body_style)
     important(style)
@@ -251,46 +427,85 @@ function define_callout_type(options)
     -- Define reset level for callout counter
     callout_count_reset_levels[class_name] = header_level
 
-    -- Make (only) first letter of label uppercase
-    label = label:gsub("^%l", label.upper)
-
     callout_handlers[class_name] = function(div)
         if div.classes:includes(class_name) then
-            -- Increase counter for current callout
-            callout_counts[class_name] = (callout_counts[class_name] or 0) + 1
-            -- Build callout number like "1.2.3" using header levels up to `header_level`
+            overall_callout_count = overall_callout_count + 1
+            -- Check if current class_name uses own or inherited counter
             local numberings = {}
-            for i = 1, header_level do
-                if (header_counts[i] and header_counts[i] > 0) then
-                    table.insert(numberings, tostring(header_counts[i]))
-                else
-                    table.insert(numberings, tostring("_"))
+
+            if not inherit_counter then
+                -- Increase counter for current callout type
+                callout_counts[counter] = (callout_counts[counter] or 0) + 1
+                -- Build callout number like "1.2.3" using header levels up to `header_level`
+                for i = 1, header_level do
+                    if (header_counts[i] and header_counts[i] > 0) then
+                        table.insert(numberings, tostring(header_counts[i]))
+                    else
+                        table.insert(numberings, tostring("_"))
+                    end
                 end
+                table.insert(numberings, tostring(callout_counts[counter]))
+            else
+                numberings = {callout_no_placeholder("parent")}
             end
-            table.insert(numberings, tostring(callout_counts[class_name]))
 
-            -- Begin callout title with the label and formatted number
-            callout_title = (label or "") .. " " .. table.concat(numberings, ".")
-            callout_id = div.identifier or callout_title
+            callout_id = div.identifier
 
-            callout_references[callout_id] = {
-                ["ref"] = callout_title,
-                ["title"] = div.attributes["title"]
-            }
-            -- If there is a title attribute, append it to the callout title
-            if (div.attributes["title"] or "") ~= "" then
-                callout_title = callout_title .. ": " .. div.attributes["title"]
+            if not callout_id or callout_id == "" then
+                callout_id = "__callout:::" .. overall_callout_count .. "__"
             end
+
+            define_callout_reference({
+                callout_type = class_name,
+                callout_type_label = label,
+                callout_id = callout_id,
+                callout_no = table.concat(numberings, "."),
+                callout_ref = "not needed",
+                callout_title = (div.attributes["title"] or "")
+            })
+
+            div.content = pandoc.walk_block(pandoc.Div(div.content), {
+                Div = function(el)
+                    if el and el.identifier and el.identifier ~= "" then
+                        -- ident_str = string.rep("  ", callout_references[el.identifier].level + 1)
+                        -- print(ident_str .. el.identifier .. " is child of " .. callout_id)
+                        -- print(ident_str .. "Replacing\n" .. ident_str .. callout_no_placeholder("parent") .. "\n" ..
+                        --           ident_str .. "by\n" .. ident_str .. use_callout_reference({
+                        --     callout_id = callout_id,
+                        --     field = "no"
+                        -- }) .. "\n" .. ident_str .. "in\n" .. ident_str .. callout_references[el.identifier].no .. "\n" ..
+                        --           ident_str .. "----------\n")
+                        callout_references[el.identifier].level = callout_references[el.identifier].level + 1
+                        callout_references[el.identifier].no =
+                            callout_references[el.identifier].no:gsub(callout_no_placeholder("parent"),
+                                use_callout_reference({
+                                    callout_id = callout_id,
+                                    field = "no"
+                                }))
+                    end
+                    return el
+                end
+            })
 
             -- Create the callout object with the specified type
             local callout = quarto.Callout({
                 type = class_name,
                 content = div.content,
-                title = callout_title,
+                title = use_callout_reference({
+                    callout_id = callout_id,
+                    field = "label"
+                }) .. " " .. use_callout_reference({
+                    callout_id = callout_id,
+                    field = "no"
+                }) .. ": " .. use_callout_reference({
+                    callout_id = callout_id,
+                    field = "title"
+                }),
                 collapse = collapse,
                 icon = icon
             })
 
+            identation_level = identation_level - 1
             return pandoc.Div(callout, pandoc.Attr(callout_id))
 
         end
@@ -307,7 +522,7 @@ end
 
 function callout_handler(div)
     -- Apply defined callout handlers
-    for _, handler in pairs(callout_handlers) do
+    for type, handler in pairs(callout_handlers) do
         local result = handler(div)
         if result then
             return result
@@ -377,6 +592,36 @@ function resolve_references(el)
 end
 -- ───────────────────────────────── <end> ────────────────────────────────── --
 
+-- ========================== > resolve_numbers < =========================== --
+
+-- ┌┌──────────────────────────────────────────────────────────────────────┐┐ --
+-- ││ x                                                                    ││ --
+-- ││ y                                                                    ││ --
+-- └└──────────────────────────────────────────────────────────────────────┘┘ --
+function resolve_numbers(element)
+    if element.identifier and element.identifier ~= "" then
+        -- print(">" .. element.identifier .. ":")
+        -- print("\t"..pandoc.utils.stringify(element))
+        return pandoc.walk_block(pandoc.Div(element), {
+            Inline = function(el)
+                if el and el.t == "Str" then
+                    -- print("\t" .. el.text)
+                    -- print(el.text)
+                    -- el.text = el.text:gsub("__(.-)__", element.identifier)
+                    -- function(inner)
+                    --     print("match: ", inner, "\n")
+                    --     return 
+                    -- end)
+
+                end
+
+                return el
+            end
+        })
+    end
+end
+-- ───────────────────────────── <end> ────────────────────────────────── --
+
 -- Master handler: runs after full document is loaded
 function Pandoc(doc)
     -- Only run if any callout-types are defined in yaml header
@@ -390,21 +635,23 @@ function Pandoc(doc)
     -- Add CSS to meta data
     add_css_to_meta(doc.meta)
 
-    -- First pass: Count headers and construct callouts
+    -- First pass: Construct callouts
     doc.blocks = pandoc.walk_block(pandoc.Div(doc.blocks), {
         Header = count_headers,
         Div = callout_handler
     }).content
 
-    -- Second pass: resolve citations
+    doc.blocks = pandoc.walk_block(pandoc.Div(doc.blocks), {
+        Div = resolve_callout_reference
+    }).content
+
+    -- Third pass: resolve citations
     doc.blocks = pandoc.walk_block(pandoc.Div(doc.blocks), {
         Cite = resolve_references
     }).content
 
     return doc
 end
-
-
 
 return {{
     Pandoc = Pandoc
