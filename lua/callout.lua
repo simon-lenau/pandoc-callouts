@@ -1,23 +1,21 @@
+local function get_script_path()
+    local info = debug.getinfo(1, 'S')
+    local source = info.source
+    if source:sub(1, 1) == '@' then
+        return source:sub(2):match("(.*/)")
+    else
+        return nil -- running from string, not a file
+    end
+end
+
+local script_path = get_script_path()
+if script_path then
+    package.path = script_path .. "?.lua;" .. package.path
+end
+
+local styles = require("styles")
+
 local overall_callout_count = 0
-
--- ========================= > Style definitions < ========================== --
-local style_default = {
-    ["border"] = "1px solid"
-}
-
-local header_style_default = {
-    ["color"] = "white",
-    ["background-color"] = "black",
-    ["border"] = "0px solid"
-}
-
-local body_style_default = {
-    ["background-color"] = "white",
-    ["color"] = "black",
-    ["border"] = "0px solid"
-}
-
--- ───────────────────────────────── <end> ────────────────────────────────── --
 
 -- ========================= > Table definitions < ========================== --
 local identation_level = 0
@@ -38,6 +36,7 @@ local callout_references = {}
 -- ││ Complete parameters with default values if they are not provided.    ││ --  
 -- └└──────────────────────────────────────────────────────────────────────┘┘ --
 local function complete(params, defaults)
+    print(defaults)
     for param, default in pairs(defaults) do
         if params[param] == nil then
             if pandoc.utils.type(default) == "Inlines" then
@@ -373,6 +372,9 @@ end
 -- └└──────────────────────────────────────────────────────────────────────┘┘ --
 
 function resolve_callout_references(id)
+    if (not id) or (id == "") then
+        return
+    end
     -- Resolve only un-resolved references
     if callout_references[id].resolved then
         return
@@ -611,17 +613,17 @@ end
 
 function define_callout_type(options)
     -- Use default values for missing arguments
-    local body_style = options.body_style or options.style or body_style_default
+    local body_style = options.body_style or options.style or styles.defaults.body
 
     local class_name = options.class_name or options.label or "default-callout"
     local collapse = (options.collapse == nil) and true or options.collapse
     local counter = (options.counter == nil) and class_name or options.counter
     local header_level = tonumber(options.header_level or 0)
-    local header_style = options.header_style or options.style or header_style_default
+    local header_style = options.header_style or options.style or styles.defaults.header
     local icon = (options.collapse == nil) and false or options.icon
     local counter_format = (options.counter_format ~= nil) and options.counter_format or nil
     local label = options.label or class_name
-    local style = options.style or style_default
+    local style = options.style or styles.defaults.style
 
     if (counter_format == "") or (counter_format == nil) then
         if header_level and (header_level > 0) then
@@ -647,12 +649,12 @@ function define_callout_type(options)
         "Expected a boolean for 'collapse' but got " .. type(collapse) .. "('" .. tostring(collapse) .. "')")
 
     -- Complete style declarations using default values
-    complete(style, style_default)
-    complete(header_style, header_style_default)
-    complete(body_style, body_style_default)
+    complete(style, styles.defaults.style)
+    complete(header_style, styles.defaults.header)
+    complete(body_style, styles.defaults.body)
 
-    complete(header_style, style_default)
-    complete(body_style, style_default)
+    complete(header_style, styles.defaults.style)
+    complete(body_style, styles.defaults.style)
 
     -- Add "!important" to each style entry if not already there
     --      (otherwise, quarto defaults will sometimes interfer)
