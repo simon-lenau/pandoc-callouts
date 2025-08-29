@@ -7,9 +7,15 @@ end
 -- ========================== > resolve_numbers < =========================== --
 
 -- ┌┌──────────────────────────────────────────────────────────────────────┐┐ --
--- ││ x                                                                    ││ --
--- ││ y                                                                    ││ --
+-- ││ DESCRIPTION                                                          ││ --
+-- ││ Resolves callout numbers based on formatting template.               ││ --
+-- ││                                                                      ││ --
+-- ││ ARGUMENTS:                                                           ││ --
+-- ││ - id (string): The unique identifier for the callout.                ││ --
+-- ││ - references (table):                                                ││ --
+-- ││   <todo>                                                             ││ --
 -- └└──────────────────────────────────────────────────────────────────────┘┘ --
+
 local function resolve_callout_numbers(id, references)
     if id and id ~= "" then
         if references.callout_references[id] then

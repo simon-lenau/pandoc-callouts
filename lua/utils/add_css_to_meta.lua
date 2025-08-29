@@ -1,6 +1,17 @@
 -- ========================== > add_css_to_meta < =========================== --
 -- ┌┌──────────────────────────────────────────────────────────────────────┐┐ --
--- ││ adding callout CSS styles to the HTML output                         ││ --
+-- ││ Adds CSS styles to the HTML output based on yaml in.                 ││ --
+-- ││                                                                      ││ --
+-- ││ ARGUMENTS:                                                           ││ --
+-- ││ - meta (table):                                                      ││ --
+-- ││       The metadata table from the pandoc document to which           ││ --
+-- ││       CSS styles are added                                           ││ --
+-- ││ - references (table):                                                ││ --
+-- ││       A table containing fields:                                     ││ --
+-- ││       - 'styles' (table):                                            ││ --
+-- ││           A table containing fields:                                 ││ --
+-- ││           - 'callouts' (table): A table containing CSS style strings ││ --
+-- ││              extracted from YAML input.                              ││ --
 -- └└──────────────────────────────────────────────────────────────────────┘┘ --
 local function add_css_to_meta(meta, references)
     -- Check if there are any callout references.styles created by this file

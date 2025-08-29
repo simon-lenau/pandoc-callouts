@@ -1,10 +1,18 @@
 -- =========================== > count_headers < ============================ --
-
 -- ┌┌──────────────────────────────────────────────────────────────────────┐┐ --
--- ││ count headers in a document                                          ││ --
+-- ││ DESCRIPTION                                                          ││ --
+-- ││ This function counts the number of headers at a given level,         ││ --
+-- ││ resets lower-level and callout counters                              ││ --
+-- ││                                                                      ││ --
+-- ││ ARGUMENTS:                                                           ││ --
+-- ││ header (table):                                                      ││ --
+-- ││      A pandoc header object.                                         ││ --
+-- ││ references (table):                                                  ││ --
+-- ││      A table containing counters for headers and callouts.           ││ --
+-- ││          It is modified by this function.                            ││ --
 -- └└──────────────────────────────────────────────────────────────────────┘┘ --
+local function count_headers(header, references)
 
-local function count_headers(header,references)
     local level = header.level
     -- Reset lower-level counters
     for i = level + 1, 6 do

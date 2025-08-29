@@ -3,8 +3,29 @@ local assert_argument = require("utils.assert_argument")
 
 -- ========================= > add_callout_style < ========================== --
 -- ┌┌──────────────────────────────────────────────────────────────────────┐┐ --
--- ││ Add a callout style                                                  ││ --
+-- ││ DESCRIPTION                                                          ││ --
+-- ││ Adds a custom callout style to the styles table.                     ││ --
+-- ││ The function supports specifying options for the class name,         ││ --
+-- ││ main style, header style, and body style of the callout.             ││ --
+-- ││                                                                      ││ --
+-- ││ ARGUMENTS:                                                           ││ --
+-- ││ options (table):                                                     ││ --
+-- ││     - class_name (string): The class name for the callout style.     ││ --
+-- ││     - style (table): A table containing CSS styles for               ││ --
+-- ││       callouts.                                                        ││ --    
+-- ││     - header_style (table): A table containing CSS styles for        ││ --
+-- ││       callouts' header. ││ -                                           ││ --
+-- ││     - body_style (table):  A table containing CSS styles for         ││ --
+-- ││       callouts' body.                                                  ││ --
+-- ││ - references (table):                                                ││ --
+-- ││       A table containing fields:                                     ││ --
+-- ││       - 'styles' (table):                                            ││ --
+-- ││           A table containing fields:                                 ││ --
+-- ││           - 'callouts' (table): A table containing CSS style strings ││ --
+-- ││              extracted from YAML input.                              ││ --
 -- └└──────────────────────────────────────────────────────────────────────┘┘ --
+
+
 local function add_callout_style(options, references)
     -- Default options
     local class_name = options.class_name or "default-callout"
@@ -44,4 +65,3 @@ end
 -- ───────────────────────────────── <end> ────────────────────────────────── --
 
 return add_callout_style
-

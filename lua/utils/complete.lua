@@ -1,6 +1,14 @@
 -- ============================== > complete < ============================== --
 -- ┌┌──────────────────────────────────────────────────────────────────────┐┐ --
--- ││ Complete parameters with default values if they are not provided.    ││ --  
+-- ││ DESCRIPTION                                                          ││ --
+-- ││ Completes a table of parameters with                                 ││ --
+-- ││ default values from a second table if they are not provided.         ││ --
+-- ││                                                                      ││ --
+-- ││ ARGUMENTS:                                                           ││ --
+-- ││ - params (table):                                                    ││ --
+-- ││   The table containing the parameters to be completed.             ││ --
+-- ││ - defaults (table):                                                  ││ --
+-- ││   The table containing default values for the parameters.          ││ --
 -- └└──────────────────────────────────────────────────────────────────────┘┘ --
 local function complete(params, defaults)
     for param, default in pairs(defaults) do

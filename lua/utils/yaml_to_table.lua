@@ -1,6 +1,11 @@
 -- =========================== > yaml_to_table < ============================ --
 -- ┌┌──────────────────────────────────────────────────────────────────────┐┐ --
--- ││ Convert yaml specification to named lua table                        ││ -- 
+-- ││ DESCRIPTION                                                          ││ --
+-- ││ Converts yaml specification to named lua table                       ││ --
+-- ││                                                                      ││ --
+-- ││ ARGUMENTS:                                                           ││ --
+-- ││ - list (table):                                                      ││ --
+-- ││   The yaml specification to be converted                             ││ --
 -- └└──────────────────────────────────────────────────────────────────────┘┘ --
 local function yaml_to_table(list)
     local output = {}

@@ -1,18 +1,41 @@
-
-
-
-local names = {"assert_argument","insert_callout_reference","shallow_copy","warn"}
+local names = {"assert_argument", "insert_callout_reference", "shallow_copy", "warn"}
 local utils = {}
 for _, name in ipairs(names) do
     utils[name] = require("utils." .. name)
 end
 
-
 -- ========================== > define_reference < ========================== --
+
 -- ┌┌──────────────────────────────────────────────────────────────────────┐┐ --
--- ││ Define references                                                    ││ --
+-- ││ DESCRIPTION                                                          ││ --
+-- ││ Defines references to callouts                                       ││ --
+-- ││                                                                      ││ --
+-- ││ ARGUMENTS:                                                           ││ --
+-- ││ - options (table) with fields:                                       ││ --
+-- ││   - callout_type (string):                                           ││ --
+-- ││      The type of the callout.                                        ││ --
+-- ││   - callout_id (string):                                             ││ --
+-- ││      The unique identifier for the callout.                          ││ --
+-- ││   - callout_ref (string):                                            ││ --
+-- ││      The reference value for the callout.                            ││ --
+-- ││   - callout_title (string):                                          ││ --
+-- ││      The title of the callout.                                       ││ --
+-- ││   - callout_type_label (string):                                     ││ --
+-- ││      The label for the callout type.                                 ││ --
+-- ││   - counter_format (string):                                         ││ --
+-- ││      The format string for the counter.                              ││ --
+-- ││   - inherits_counter (boolean):                                      ││ --
+-- ││      Whether the callout inherits a counter.                         ││ --
+-- ││   - header_level (number):                                           ││ --
+-- ││      The header level for the callout.                               ││ --
+-- ││ - references (table) with fields:                                    ││ --
+-- ││   - callout_handlers (table):                                        ││ --
+-- ││      A table of callout handlers.                                    ││ --
+-- ││   - callout_references (table):                                      ││ --
+-- ││         A table to store the callout references.                     ││ --
 -- └└──────────────────────────────────────────────────────────────────────┘┘ --
-local function define_callout_reference(options,references)
+
+local function define_callout_reference(options, references)
     -- Ensure options is a table
     assert(type(options) == "table", "Expected a table for 'options' but got " .. type(options))
 
@@ -94,7 +117,8 @@ local function define_callout_reference(options,references)
     }
 
     if references.header_counts then
-        references.callout_references[options.callout_id]["header_counts"] = utils.shallow_copy(references.header_counts)
+        references.callout_references[options.callout_id]["header_counts"] =
+            utils.shallow_copy(references.header_counts)
     end
 end
 

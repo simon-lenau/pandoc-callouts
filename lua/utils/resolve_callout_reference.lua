@@ -6,8 +6,16 @@ end
 
 -- ===================== > resolve_callout_reference < ====================== --
 -- ┌┌──────────────────────────────────────────────────────────────────────┐┐ --
--- ││ x                                                                    ││ --
+-- ││ DESCRIPTION                                                          ││ --
+-- ││ Resolves a single callout reference                                  ││ --
+-- ││                                                                      ││ --
+-- ││ ARGUMENTS:                                                           ││ --
+-- ││ - options (table):                                                   ││ --
+-- ││   <todo>                                                             ││ --
+-- ││ - references (table):                                                ││ --
+-- ││   <todo>                                                             ││ --
 -- └└──────────────────────────────────────────────────────────────────────┘┘ --
+
 local function resolve_callout_reference(options, references)
     -- Ensure options is a table
     assert(type(options) == "table", "Expected a table for 'options' but got " .. type(options))
