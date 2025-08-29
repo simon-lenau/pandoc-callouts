@@ -1,10 +1,17 @@
 -- ========================== > assert_argument < =========================== --
-
 -- ┌┌──────────────────────────────────────────────────────────────────────┐┐ --
--- ││ x                                                                    ││ --
+-- ││ DESCRIPTION                                                          ││ --
+-- ││ Validates that a specific argument in a table is of expected type.   ││ --
+-- ││                                                                      ││ --
+-- ││ ARGUMENTS:                                                           ││ --
+-- ││ options (table): Table containing the following fields:              ││ --
+-- ││      - arguments (table):                                            ││ --
+-- ││          Table of arguments containing the argument to validate.     ││ --
+-- ││      - name (string):                                                ││ --
+-- ││          Name of the argument to validate.                           ││ --
+-- ││      - type_name (string):                                           ││ --
+-- ││          Expected type for the argument to validate.                 ││ --
 -- └└──────────────────────────────────────────────────────────────────────┘┘ --
-
-
 function assert_argument(options)
     -- Ensure options is a table
     assert(type(options) == "table", "Expected a table for 'options' but got " .. type(options))

@@ -1,4 +1,4 @@
-local names = {"assert_argument", "is_empty", "resolve_callout_reference","resolve_callout_numbers"}
+local names = {"assert_argument", "is_empty", "resolve_callout_reference", "resolve_callout_numbers"}
 local utils = {}
 for _, name in ipairs(names) do
     utils[name] = require("utils." .. name)
@@ -7,7 +7,14 @@ end
 -- ===================== > resolve_callout_references < ===================== --
 
 -- ┌┌──────────────────────────────────────────────────────────────────────┐┐ --
--- ││ x                                                                    ││ --
+-- ││ DESCRIPTION                                                          ││ --
+-- ││ Resolves callout references                                          ││ --
+-- ││                                                                      ││ --
+-- ││ ARGUMENTS:                                                           ││ --
+-- ││ - options (table):                                                   ││ --
+-- ││   <todo>                                                             ││ --
+-- ││ - references (table):                                                ││ --
+-- ││   <todo>                                                             ││ --
 -- └└──────────────────────────────────────────────────────────────────────┘┘ --
 
 local function resolve_callout_references(id, references)
@@ -54,8 +61,10 @@ local function resolve_callout_references(id, references)
             resolve_callout_references(parent_id, references)
         end
     end
+
     if (utils.is_empty(references.callout_references[id].parents) or
         not references.callout_references[id].inherits_counter) then
+        -- Check if current callout counter needs to be reset
         local reset_counter = false
         for i = 1, references.callout_references[id].header_level do
 
@@ -68,6 +77,7 @@ local function resolve_callout_references(id, references)
         end
 
         if reset_counter then
+            -- Reset current callout counter 
             references.headcounts[references.callout_references[id].counter] =
                 references.callout_references[id].header_counts
             references.callout_counts[references.callout_references[id].type] = 0
@@ -86,10 +96,10 @@ local function resolve_callout_references(id, references)
             utils.resolve_callout_reference({
                 callout_id = id,
                 field = key
-            },references)
+            }, references)
         end
     end
-    utils.resolve_callout_numbers(id,references)
+    utils.resolve_callout_numbers(id, references)
     utils.resolve_callout_reference({
         callout_id = id,
         field = "number"

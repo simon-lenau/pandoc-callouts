@@ -8,6 +8,18 @@ local function var(varname)
     return "{{" .. varname .. "}}"
 end
 
+-- ===================== > resolve_varblocks < ====================== --
+-- ┌┌──────────────────────────────────────────────────────────────────────┐┐ --
+-- ││ DESCRIPTION                                                          ││ --
+-- ││ Resolves variable blocks in number formatting templates              ││ --
+-- ││                                                                      ││ --
+-- ││ ARGUMENTS:                                                           ││ --
+-- ││ - options (table):                                                   ││ --
+-- ││   <todo>                                                             ││ --
+-- ││ - references (table):                                                ││ --
+-- ││   <todo>                                                             ││ --
+-- └└──────────────────────────────────────────────────────────────────────┘┘ --
+
 local function resolve_varblocks(options)
     -- Ensure options is a table
     assert(type(options) == "table", "Expected a table for 'options' but got " .. type(options))
@@ -30,6 +42,7 @@ local function resolve_varblocks(options)
     })
 
     local result = options.format
+
     -- Resolve placeholders
     for key, val in pairs(options.placeholders) do
         if string.find(result, var(key)) then
@@ -46,10 +59,9 @@ local function resolve_varblocks(options)
         end
     end)
 
-    -- result = string.gsub(result, "[%{%}]", "")
-
     return result
 
 end
+-- ───────────────────────────────── <end> ────────────────────────────────── --
 
 return resolve_varblocks

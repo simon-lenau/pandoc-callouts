@@ -22,7 +22,9 @@ local utils = require("utils")
 
 local overall_callout_count = 0
 
+
 -- ========================= > Table definitions < ========================== --
+
 
 local header_counts = {}
 local headcounts = {}
@@ -37,7 +39,7 @@ local callout_references = {}
 -- ========================== > callout_handler < =========================== --
 
 -- ┌┌──────────────────────────────────────────────────────────────────────┐┐ --
--- ││ Handler for running the handlers for callout utils.add_callout_style       ││ --
+-- ││ Handler for running the handlers for callout utils.add_callout_style ││ --                
 -- └└──────────────────────────────────────────────────────────────────────┘┘ --
 
 function callout_handler(div)

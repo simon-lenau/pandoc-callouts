@@ -1,8 +1,12 @@
 -- ============================ > shallow_copy < ============================ --
-
 -- ┌┌──────────────────────────────────────────────────────────────────────┐┐ --
--- ││ create a shallow copy of a table                                     ││ --
+-- ││ DESCRIPTION                                                          ││ --
+-- ││ Creates a shallow copy of the input table.                           ││ --
+-- ││ ARGUMENTS:                                                           ││ --
+-- ││  t (table):                                                          ││ --
+-- ││      The table to be shallow copied.                                 ││ --
 -- └└──────────────────────────────────────────────────────────────────────┘┘ --
+
 local function shallow_copy(t)
     local copy = {}
     for k, v in pairs(t) do

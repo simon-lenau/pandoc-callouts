@@ -4,12 +4,16 @@ for _, name in ipairs(names) do
     utils[name] = require("utils." .. name)
 end
 
-
 -- ==================== > callout_field_regex_pattern < ===================== --
 
 -- ┌┌──────────────────────────────────────────────────────────────────────┐┐ --
--- ││ x                                                                    ││ --
+-- ││ DESCRIPTION                                                          ││ --
+-- ││ This function generates regex patterns for callout field references  ││ --
+-- ││ for subsequent use in regex operations.                              ││ --
 -- └└──────────────────────────────────────────────────────────────────────┘┘ --
+
+-- ==================== > callout_field_regex_pattern < ===================== --
+
 local function callout_field_regex_pattern()
     -- Define regex pattern
     local pattern = utils.insert_callout_reference({
@@ -26,6 +30,7 @@ local function callout_field_regex_pattern()
     pattern = string.gsub(pattern, "__capture__", "(.-)")
     return pattern
 end
+
 -- ───────────────────────────────── <end> ────────────────────────────────── --
 
 return callout_field_regex_pattern

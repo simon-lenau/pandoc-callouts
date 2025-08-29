@@ -1,9 +1,15 @@
 -- ================================ > warn < ================================ --
 -- ┌┌──────────────────────────────────────────────────────────────────────┐┐ --
--- ││ warn                                                                 ││ --
+-- ││ DESCRIPTION                                                          ││ --
+-- ││ Prints warning message to stderr                                     ││ --
+-- ││                                                                      ││ --
+-- ││ ARGUMENTS:                                                           ││ --
+-- ││ - message (string):                                                  ││ --
+-- ││   The warning message to be printed                                  ││ --
 -- └└──────────────────────────────────────────────────────────────────────┘┘ --
 local function warn(message)
-    io.stderr:write(string.rep("-", 80, ""), "\n", "WARNING: " .. message, "\n", string.rep("-", 80, ""), "\n")
+    local sep = string.rep("-", 80, "")
+    io.stderr:write(sep, "\n", "WARNING:\n\t", message, "\n", sep, "\n")
 end
 
 -- ───────────────────────────────── <end> ────────────────────────────────── --

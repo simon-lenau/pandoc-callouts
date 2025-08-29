@@ -93,11 +93,11 @@ assert_argument({
     }, references)
 
     -- Define reset level for callout counter
-    define_counters(counter)
+    define_counters(counter,references)
     references.callout_count_reset_levels[class_name] = header_level
 
     references.headcounts = references.headcounts or {}
-    references.headcounts[counter] = {}
+    references.headcounts[counter] = references.headcounts[counter] or {}
 
     references.callout_handlers[class_name] = function(div)
         if div.classes:includes(class_name) then
