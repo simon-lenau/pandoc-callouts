@@ -8,7 +8,8 @@ local function var(varname)
     return "{{" .. varname .. "}}"
 end
 
--- ===================== > resolve_varblocks < ====================== --
+-- ========================= > resolve_varblocks < ========================== --
+
 -- ┌┌──────────────────────────────────────────────────────────────────────┐┐ --
 -- ││ DESCRIPTION                                                          ││ --
 -- ││ Resolves variable blocks in number formatting templates              ││ --
