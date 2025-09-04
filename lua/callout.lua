@@ -19,22 +19,7 @@ end
 
 local styles = require("styles")
 local utils = require("utils")
-
-local overall_callout_count = 0
-
-
--- ========================= > Table definitions < ========================== --
-
-
-local header_counts = {}
-local headcounts = {}
-local callout_count_reset_levels = {}
-local callout_counts = {}
-local callout_ids = {}
-local callout_handlers = {}
-local callout_references = {}
-
--- ───────────────────────────────── <end> ────────────────────────────────── --
+local data = require("data")
 
 -- ========================== > callout_handler < =========================== --
 
@@ -42,9 +27,9 @@ local callout_references = {}
 -- ││ Handler for running the handlers for callout utils.add_callout_style ││ --                
 -- └└──────────────────────────────────────────────────────────────────────┘┘ --
 
-function callout_handler(div)
+function callout_handler(div, references)
     -- Apply defined callout handlers
-    for type, handler in pairs(callout_handlers) do
+    for _, handler in pairs(references.callout_handlers) do
         local result = handler(div)
         if result then
             return result
@@ -56,13 +41,19 @@ end
 -- ───────────────────────────────── <end> ────────────────────────────────── --
 
 -- ========================= > Resolve references < ========================= --
-function resolve_citations(cite)
+function resolve_citations(cite, references)
+    utils.assert_argument({
+        arguments = references,
+        name = "callout_references",
+        type = "table"
+    })
+
     if cite.citations then
         for _, citation in ipairs(cite.citations) do
             if citation.id then
-                if callout_references[citation.id] then
-                    return pandoc.Link(callout_references[citation.id]["label"] .. " " ..
-                                           callout_references[citation.id]["number"], "#" .. citation.id)
+                if references.callout_references[citation.id] then
+                    return pandoc.Link(references.callout_references[citation.id]["label"] .. " " ..
+                                           references.callout_references[citation.id]["number"], "#" .. citation.id)
                 end
             end
         end
@@ -78,17 +69,17 @@ function Pandoc(doc)
         return doc
     end
 
-    local references = {
-        callout_count_reset_levels = callout_count_reset_levels,
-        callout_handlers = callout_handlers,
-        overall_callout_count = overall_callout_count,
-        callout_ids = callout_ids,
-        callout_references = callout_references,
-        header_counts = header_counts,
-        headcounts = headcounts,
-        callout_counts = callout_counts,
+    local references = data.new.references({
+        callout_count_reset_levels = data.new.empty_table(),
+        callout_handlers = data.new.empty_table(),
+        overall_callout_count = 0,
+        callout_ids = data.new.empty_table(),
+        callout_references = data.new.empty_table(),
+        header_counts = data.new.empty_table(),
+        headcounts = data.new.empty_table(),
+        callout_counts = data.new.empty_table(),
         styles = styles
-    }
+    })
 
     -- Create callout type definitions
     utils.process_yaml(doc.meta, references)
@@ -101,32 +92,37 @@ function Pandoc(doc)
         Header = function(header)
             utils.count_headers(header, references)
         end,
-        Div = callout_handler
+        Div = function(div)
+            return callout_handler(div, references)
+        end
     }).content
 
     -- Process callouts
-    for _, id in pairs(callout_ids) do
+    for _, id in pairs(references.callout_ids) do
         utils.resolve_callout_references(id, references)
     end
 
     -- Second pass: Output callouts
     doc.blocks = pandoc.walk_block(pandoc.Div(doc.blocks), {
-        Inlines = function(d)
-            for i, _ in ipairs(d) do
-                if d[i].t == "Str" then
-                    d[i].text = string.gsub(d[i].text, utils.callout_field_regex_pattern(), function(id, field)
-                        return callout_references[id][field]
-                    end)
+        Inlines = function(inline)
+            for i, _ in ipairs(inline) do
+                if inline[i].t == "Str" then
+                    inline[i].text = string.gsub(inline[i].text, utils.callout_field_regex_pattern(),
+                        function(id, field)
+                            return references.callout_references[id][field]
+                        end)
 
                 end
             end
-            return (d)
+            return inline
         end
     }).content
 
     -- Third pass: resolve citations
     doc.blocks = pandoc.walk_block(pandoc.Div(doc.blocks), {
-        Cite = resolve_citations
+        Cite = function(citation)
+            return resolve_citations(citation, references)
+        end
     }).content
 
     return doc

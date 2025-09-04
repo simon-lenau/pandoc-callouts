@@ -37,19 +37,17 @@ local function define_callout_type(options, references)
 
     -- Make sure arguments are of appropriate type
 
-assert_argument({
-    arguments = references,
-    name = "styles",
-    type = "table"
-})
+    assert_argument({
+        arguments = references,
+        name = "styles",
+        type = "table"
+    })
 
-
-assert_argument({
-    arguments = references.styles,
-    name = "callouts",
-    type = "table"
-})
-
+    assert_argument({
+        arguments = references.styles,
+        name = "callouts",
+        type = "table"
+    })
 
     assert_argument({
         arguments = references,
@@ -93,7 +91,7 @@ assert_argument({
     }, references)
 
     -- Define reset level for callout counter
-    define_counters(counter,references)
+    define_counters(counter, references)
     references.callout_count_reset_levels[class_name] = header_level
 
     references.headcounts = references.headcounts or {}
