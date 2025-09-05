@@ -20,49 +20,9 @@ end
 local styles = require("styles")
 local utils = require("utils")
 local data = require("data")
+local resolvers = require("resolvers")
 
--- ========================== > callout_handler < =========================== --
-
--- ┌┌──────────────────────────────────────────────────────────────────────┐┐ --
--- ││ Handler for running the handlers for callout utils.add_callout_style ││ --                
--- └└──────────────────────────────────────────────────────────────────────┘┘ --
-
-function callout_handler(div, references)
-    -- Apply defined callout handlers
-    for _, handler in pairs(references.callout_handlers) do
-        local result = handler(div)
-        if result then
-            return result
-        end
-    end
-    return div
-end
-
--- ───────────────────────────────── <end> ────────────────────────────────── --
-
--- ========================= > Resolve references < ========================= --
-function resolve_citations(cite, references)
-    utils.assert_argument({
-        arguments = references,
-        name = "callout_references",
-        type = "table"
-    })
-
-    if cite.citations then
-        for _, citation in ipairs(cite.citations) do
-            if citation.id then
-                if references.callout_references[citation.id] then
-                    return pandoc.Link(references.callout_references[citation.id]["label"] .. " " ..
-                                           references.callout_references[citation.id]["number"], "#" .. citation.id)
-                end
-            end
-        end
-    end
-    return cite
-end
--- ───────────────────────────────── <end> ────────────────────────────────── --
-
--- Master handler: runs after full document is loaded
+-- Main handler: runs after full document is loaded
 function Pandoc(doc)
     -- Only run if any callout-types are defined in yaml header
     if not doc.meta['callout-types'] then
@@ -93,7 +53,7 @@ function Pandoc(doc)
             utils.count_headers(header, references)
         end,
         Div = function(div)
-            return callout_handler(div, references)
+            return resolvers.Div(div, references)
         end
     }).content
 
@@ -105,23 +65,15 @@ function Pandoc(doc)
     -- Second pass: Output callouts
     doc.blocks = pandoc.walk_block(pandoc.Div(doc.blocks), {
         Inlines = function(inline)
-            for i, _ in ipairs(inline) do
-                if inline[i].t == "Str" then
-                    inline[i].text = string.gsub(inline[i].text, utils.callout_field_regex_pattern(),
-                        function(id, field)
-                            return references.callout_references[id][field]
-                        end)
-
-                end
-            end
-            return inline
+            return resolvers.Inlines(inline, references)
         end
+
     }).content
 
     -- Third pass: resolve citations
     doc.blocks = pandoc.walk_block(pandoc.Div(doc.blocks), {
         Cite = function(citation)
-            return resolve_citations(citation, references)
+            return resolvers.Cite(citation, references)
         end
     }).content
 

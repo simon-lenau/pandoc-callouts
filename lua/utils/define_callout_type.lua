@@ -113,7 +113,7 @@ local function define_callout_type(options, references)
             -- Check if the callout_id already exists
             if references.callout_references[callout_id] then
                 local new_callout_id = callout_id .. "[" .. references.overall_callout_count .. "]"
-                warn("Callout with ID '" .. callout_id .. "' already exists.\n\t Renamed to '" .. new_callout_id .. "'")
+                utilswarn("Callout with ID '" .. callout_id .. "' already exists.\n\t Renamed to '" .. new_callout_id .. "'")
                 callout_id = new_callout_id
             end
 
