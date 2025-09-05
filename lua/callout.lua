@@ -42,7 +42,7 @@ function Pandoc(doc)
     })
 
     -- Create callout type definitions
-    utils.process_yaml(doc.meta, references)
+    resolvers.process_yaml(doc.meta, references)
 
     -- Add CSS to meta data
     utils.add_css_to_meta(doc.meta, references)
